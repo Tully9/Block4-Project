@@ -1,6 +1,6 @@
 import psycopg
 
-# Connect to your database
+# Connect to your PostgreSQL database
 conn = psycopg.connect(
     dbname="tomdb",
     user="postgres",
@@ -9,17 +9,18 @@ conn = psycopg.connect(
     port="5432"
 )
 
-# Take input from the terminal
-name = input("Enter the name of the user to update: ")
-new_age = int(input(f"Enter the new age for {name}: "))
+# Take user input
+name = input("Enter user's name: ")
+email = input("Enter user's email: ")
+age = int(input("Enter user's age: "))
 
-# Use parameterized SQL (to avoid SQL injection)
+# Insert the new user into the table
 with conn.cursor() as cur:
     cur.execute(
-        "UPDATE users SET age = %s WHERE name = %s",
-        (new_age, name)
+        "INSERT INTO users (name, email, age) VALUES (%s, %s, %s)",
+        (name, email, age)
     )
     conn.commit()
-    print(f"{cur.rowcount} row(s) updated.")
+    print(f"User '{name}' added successfully.")
 
 conn.close()
