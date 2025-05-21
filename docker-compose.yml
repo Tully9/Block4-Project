@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: tomdb
+    environment:
+      POSTGRES_DB: tomdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./tomdb_dump.sql:/docker-entrypoint-initdb.d/tomdb_dump.sql
+
+  app:
+    build: .
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: tomdb
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+
+volumes:
+  pgdata:
