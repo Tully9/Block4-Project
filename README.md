@@ -32,4 +32,4 @@ docker push tomtullyacr987.azurecr.io/myapp:latest
 Tell your Azure Web App to use the new image:
 If it's already using :latest, then just restarting the Web App will pull the newest version:
 
-az webapp restart --name <your-webapp-name> --resource-group <your-resource-group>
+az webapp restart --name Tully-ISE-Recidency-Solution --resource-group myResourceGroup
