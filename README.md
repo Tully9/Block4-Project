@@ -14,3 +14,22 @@
 - Students list companies
 
 Refer to sheet of paper
+
+# Important note on uploading new content
+
+🔁 Code Update → Live on Azure Flow
+Make your code changes locally.
+
+Rebuild your Docker image:
+
+docker build -t tomtullyacr987.azurecr.io/myapp:latest .
+
+Push the updated image to your Azure Container Registry (ACR):
+
+az acr login --name tomtullyacr987
+docker push tomtullyacr987.azurecr.io/myapp:latest
+
+Tell your Azure Web App to use the new image:
+If it's already using :latest, then just restarting the Web App will pull the newest version:
+
+az webapp restart --name <your-webapp-name> --resource-group <your-resource-group>
