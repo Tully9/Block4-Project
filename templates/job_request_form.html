@@ -1,0 +1,47 @@
+<!-- templates/job_request_form.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Submit Job Request</title>
+</head>
+<body>
+    <h1>Submit Job Request</h1>
+    
+    <form action="{{ url_for('process_job_request') }}" method="POST">
+        <label for="name">Company Name:</label>
+        <input type="text" id="name" name="name" required><br><br>
+
+        <label for="logo_url">Logo URL:</label>
+        <input type="text" id="logo_url" name="logo_url"><br><br>
+
+        <label for="description">Description:</label>
+        <textarea id="description" name="description"></textarea><br><br>
+
+        <label for="tech_stack">Tech Stack:</label>
+        <input type="text" id="tech_stack" name="tech_stack"><br><br>
+
+        <label for="location">Location:</label>
+        <input type="text" id="location" name="location"><br><br>
+
+        <label for="salary">Salary:</label>
+        <input type="number" id="salary" name="salary"><br><br>
+
+        <label for="working_block">Working Block:</label>
+        <input type="text" id="working_block" name="working_block"><br><br>
+
+        <label for="positions_available">Positions Available:</label>
+        <input type="number" id="positions_available" name="positions_available"><br><br>
+
+        <label for="requires_cv">Requires CV?</label>
+        <input type="checkbox" id="requires_cv" name="requires_cv"><br><br>
+
+        <label for="is_charity">Is this a charity?</label>
+        <input type="checkbox" id="is_charity" name="is_charity"><br><br>
+
+        <label for="is_private">Is this a private company?</label>
+        <input type="checkbox" id="is_private" name="is_private"><br><br>
+
+        <input type="submit" value="Submit Job Request">
+    </form>
+</body>
+</html>

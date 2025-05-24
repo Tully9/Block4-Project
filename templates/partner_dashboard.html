@@ -1,10 +1,16 @@
+<!-- templates/partner_dashboard.html -->
 <!DOCTYPE html>
 <html>
 <head>
     <title>Partner Dashboard</title>
 </head>
 <body>
-    <h2>Welcome, Partner {{ email }}</h2>
-    <a href="/logout">Logout</a>
+    <h1>Welcome, Partner {{ email }}</h1>
+    <p>This is your partner dashboard.</p>
+    
+    <!-- Button to trigger form submission -->
+    <a href="{{ url_for('submit_job_request') }}">
+        <button>Submit Job Request</button>
+    </a>
 </body>
 </html>

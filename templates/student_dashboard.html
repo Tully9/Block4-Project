@@ -1,10 +1,43 @@
+<!-- templates/student_dashboard.html -->
 <!DOCTYPE html>
 <html>
 <head>
     <title>Student Dashboard</title>
 </head>
 <body>
-    <h2>Welcome, Student {{ email }}</h2>
-    <a href="/logout">Logout</a>
+    <h1>Welcome, Student {{ student_id }}</h1>
+
+    <h2>Available Job Options</h2>
+    <ul>
+        {% for job in available_jobs %}
+            <li>
+                <img src="{{ job[2] }}" alt="{{ job[1] }} Logo" width="50">
+                <strong>{{ job[1] }}</strong> - {{ job[3] }} <br>
+                Tech Stack: {{ job[4] }}<br>
+                Location: {{ job[5] }} <br>
+                Salary: €{{ job[6] }}<br>
+                Positions Available: {{ job[8] }}<br>
+                <a href="{{ url_for('apply_for_job', company_id=job[0]) }}">Apply</a>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <h2>Your Job Matches</h2>
+    <ul>
+        {% for match in matched_jobs %}
+            <li>
+                <strong>{{ match[1] }}</strong> - Matched as {{ match[2] }} on {{ match[3] }}<br>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <h2>Your Self-Arranged Jobs</h2>
+    <ul>
+        {% for self_job in self_arranged_jobs %}
+            <li>
+                <strong>{{ self_job[1] }}</strong> - {{ 'Approved' if self_job[2] else 'Pending Approval' }}<br>
+            </li>
+        {% endfor %}
+    </ul>
 </body>
 </html>
