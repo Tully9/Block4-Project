@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>JobPortal</h2>
+            </div>
+            <ul class="sidebar-menu">
+                {% if session.get("user_type") == "staff" %}
+                    <li><a href="/logout">🔓 Logout</a></li>
+                    <li><a href="/create_job">➕ Create Job</a></li>
+                    <li><a href="/approve_jobs">✅ Approve Jobs</a></li>
+                    <li><a href="/view_jobs">📄 View Jobs</a></li>
+                    <li><a href="/settings">⚙️ Settings</a></li>
+                {% endif %}
+
+                {% if session.get("user_type") == "student" %}
+                    <li><a href="/logout">🔓 Logout</a></li>
+                    <li><a href="/view_jobs">📄 View Jobs</a></li>
+                    <li><a href="/job_preferences">📋 Job Preferences</a></li>
+                    <li><a href="/job_offers">💼 Job Offers</a></li>
+                    <li><a href="/settings">⚙️ Settings</a></li>
+                {% endif %}
+
+                {% if session.get("user_type") == "partner" %}
+                    <li><a href="/logout">🔓 Logout</a></li>
+                    <li><a href="/create_job">➕ Create Job</a></li>
+                    <li><a href="/view_jobs">📄 View Jobs</a></li>
+                    <li><a href="/settings">⚙️ Settings</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+
+        <!-- Main Dashboard Content -->
+        <main class="dashboard-main">
+            {% block content %}
+            <!-- Specific content will go here -->
+            {% endblock %}
+        </main>
+    </div>
+</body>
+</html>

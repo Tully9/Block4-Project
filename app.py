@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session, url_for, abort
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
@@ -39,24 +39,49 @@ def index():
         if not account or account["password"] != password:
             error = "Invalid email or password"
         else:
-            # Determine role
-            if account["student_email"] == input_email:
-                session["role"] = "student"
-                session["email"] = account["student_email"]
-                return redirect(url_for("student_dashboard"))
-            elif account["staff_email"] == input_email:
-                session["role"] = "staff"
-                session["email"] = account["staff_email"]
-                return redirect(url_for("staff_dashboard"))
-            elif account["partner_email"] == input_email:
-                session["role"] = "partner"
-                session["email"] = account["partner_email"]
-                return redirect(url_for("partner_dashboard"))
+            # In index() route (fix this)
+                if account["student_email"] == input_email:
+                    session["user_type"] = "student"
+                    session["email"] = account["student_email"]
+                    return redirect(url_for("student_dashboard"))
+                elif account["staff_email"] == input_email:
+                    session["user_type"] = "staff"
+                    session["email"] = account["staff_email"]
+                    return redirect(url_for("staff_dashboard"))
+                elif account["partner_email"] == input_email:
+                    session["user_type"] = "partner"
+                    session["email"] = account["partner_email"]
+                    return redirect(url_for("partner_dashboard"))
 
     return render_template("index.html", error=error)
 
+@app.route("/login", methods=["POST"])
+def login():
+    email = request.form["email"]
+    password = request.form["password"]
+
+    # Query DB for the account
+    user = db.query("SELECT * FROM accounts WHERE student_email = %s OR staff_email = %s OR partner_email = %s",
+                    (email, email, email)).fetchone()
+
+    if user and user["password"] == password:  # Ideally hash check
+        if user["staff_email"] == email:
+            session["user_type"] = "staff"
+        elif user["student_email"] == email:
+            session["user_type"] = "student"
+        elif user["partner_email"] == email:
+            session["user_type"] = "partner"
+
+        session["email"] = email
+        return redirect(url_for("dashboard"))
+
+    return "Invalid credentials", 401
+
 @app.route('/student_dashboard')
 def student_dashboard():
+    if session.get("user_type") not in ["staff", "student"]:
+        abort(403)  # Forbidden
+
     student_id = session.get('student_id')  # Assume student_id is stored in session after login
     
     # Query to get the available job options
@@ -103,37 +128,37 @@ def student_dashboard():
         self_arranged_jobs=self_arranged_jobs
     )
 
-@app.route('/apply_for_job/<int:company_id>')
-def apply_for_job(company_id):
-    student_id = session.get('student_id')
-    # Here you can handle CV upload or job application process
-    return f"Student {student_id} applied for job {company_id}!"
+# @app.route('/apply_for_job/<int:company_id>')
+# def apply_for_job(company_id):
+#     student_id = session.get('student_id')
+#     # Here you can handle CV upload or job application process
+#     return f"Student {student_id} applied for job {company_id}!"
 
-@app.route('/submit_cv/<int:company_id>', methods=['POST'])
-def submit_cv(company_id):
-    student_id = session.get("student_id")  # Assume student_id is stored in session
-    cv_file = request.files['cv_file']
+# @app.route('/submit_cv/<int:company_id>', methods=['POST'])
+# def submit_cv(company_id):
+#     student_id = session.get("student_id")  # Assume student_id is stored in session
+#     cv_file = request.files['cv_file']
 
-    if cv_file and allowed_file(cv_file.filename):
-        filename = secure_filename(cv_file.filename)
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        cv_file.save(filepath)
+#     if cv_file and allowed_file(cv_file.filename):
+#         filename = secure_filename(cv_file.filename)
+#         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+#         cv_file.save(filepath)
 
-        # Insert CV submission into the database
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("""
-            INSERT INTO cv_submissions (student_id, company_id, round, cv_file_path)
-            VALUES (%s, %s, 1, %s)  -- assuming round 1 for simplicity
-        """, (student_id, company_id, filepath))
-        conn.commit()
+#         # Insert CV submission into the database
+#         conn = get_db_connection()
+#         cur = conn.cursor()
+#         cur.execute("""
+#             INSERT INTO cv_submissions (student_id, company_id, round, cv_file_path)
+#             VALUES (%s, %s, 1, %s)  -- assuming round 1 for simplicity
+#         """, (student_id, company_id, filepath))
+#         conn.commit()
 
-        cur.close()
-        conn.close()
+#         cur.close()
+#         conn.close()
 
-        return redirect(url_for('student_dashboard'))
-    else:
-        return "Invalid file type. Only PDF or DOCX files are allowed."
+#         return redirect(url_for('student_dashboard'))
+#     else:
+#         return "Invalid file type. Only PDF or DOCX files are allowed."
 
 @app.route("/staff")
 def staff_dashboard():
@@ -143,15 +168,26 @@ def staff_dashboard():
 
 @app.route('/partner')
 def partner_dashboard():
+    if session.get("user_type") not in ["staff", "partner"]:
+        abort(403)  # Forbidden
+
+
     email = session.get("email")  # Assume email is stored in session for login
     return render_template('partner_dashboard.html', email=email)
 
 @app.route('/submit_job_request')
 def submit_job_request():
+    if session.get("user_type") not in ["staff", "partner"]:
+        abort(403)  # Forbidden
+
+
     return render_template('job_request_form.html')
 
 @app.route('/process_job_request', methods=['POST'])
 def process_job_request():
+    if session.get("user_type") not in ["staff", "partner"]:
+        abort(403)  # Forbidden
+
     # Get form data
     name = request.form['name']
     logo_url = request.form['logo_url']
@@ -181,10 +217,22 @@ def process_job_request():
     # Redirect to the partner dashboard
     return redirect(url_for('partner_dashboard'))
 
+@app.route("/approve_jobs")
+def approve_jobs():
+    if session.get("user_type") != "staff":
+        abort(403)  # Forbidden
+
+    # TODO: Load pending job posts from DB
+    return render_template("approve_jobs.html")
+
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/")
+
+@app.errorhandler(403)
+def forbidden(e):
+    return render_template("403.html"), 403
 
 if __name__ == "__main__":
     app.run(debug=True)
